@@ -103,3 +103,20 @@ li:hover {
     background-color: #f44336;
     color: white;
 }
+
+.filters {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.filters select, .filters input {
+    padding: 5px;
+    font-size: 14px;
+}
+
+.task-due-date {
+    font-size: 14px;
+    color: #777;
+    margin-left: 10px;
+}

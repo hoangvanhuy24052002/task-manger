@@ -1,113 +1,106 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Get elements
     const taskInput = document.getElementById('taskInput');
+    const taskDueDate = document.getElementById('taskDueDate');
+    const taskCategory = document.getElementById('taskCategory');
     const addTaskBtn = document.getElementById('addTask');
     const tasksList = document.getElementById('tasks');
-    
-    // Load tasks from localStorage
+    const filterCategory = document.getElementById('filterCategory');
+    const filterCompleted = document.getElementById('filterCompleted');
+
     let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
     
-    // Display tasks when the page loads
     renderTasks();
-    
-    // Add task button event
+
     addTaskBtn.addEventListener('click', addNewTask);
-    
-    // Add task when Enter key is pressed
     taskInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            addNewTask();
-        }
+        if (e.key === 'Enter') addNewTask();
     });
-    
-    // Add a new task
+
+    filterCategory.addEventListener('change', renderTasks);
+    filterCompleted.addEventListener('change', renderTasks);
+
     function addNewTask() {
         const taskText = taskInput.value.trim();
-        
+        const dueDate = taskDueDate.value;
+        const category = taskCategory.value;
+
         if (taskText !== '') {
-            // Create new task object
             const task = {
                 id: Date.now(),
                 text: taskText,
+                dueDate: dueDate,
+                category: category,
                 completed: false
             };
-            
-            // Add to tasks array
+
             tasks.push(task);
-            
-            // Save to localStorage
             saveTasks();
-            
-            // Render tasks
             renderTasks();
-            
-            // Clear input
+
             taskInput.value = '';
+            taskDueDate.value = '';
             taskInput.focus();
         }
     }
-    
-    // Render the task list
+
     function renderTasks() {
         tasksList.innerHTML = '';
-        
-        tasks.forEach(task => {
+
+        const filteredTasks = tasks.filter(task => {
+            const matchesCategory = filterCategory.value === 'all' || task.category === filterCategory.value;
+            const matchesCompletion = !filterCompleted.checked || task.completed;
+            return matchesCategory && matchesCompletion;
+        });
+
+        filteredTasks.forEach(task => {
             const li = document.createElement('li');
-            
-            // Create task text span
+
             const taskTextSpan = document.createElement('span');
             taskTextSpan.classList.add('task-text');
-            taskTextSpan.textContent = task.text;
+            taskTextSpan.textContent = `${task.text} (${task.category})`;
+
             if (task.completed) {
                 taskTextSpan.classList.add('completed');
             }
-            
-            // Create action buttons container
+
+            const dueDateSpan = document.createElement('span');
+            dueDateSpan.classList.add('task-due-date');
+            dueDateSpan.textContent = task.dueDate ? `Due: ${task.dueDate}` : '';
+
             const actionsDiv = document.createElement('div');
             actionsDiv.classList.add('task-actions');
-            
-            // Create complete button
+
             const completeBtn = document.createElement('button');
             completeBtn.classList.add('complete-btn');
             completeBtn.textContent = task.completed ? 'Undo' : 'Complete';
             completeBtn.addEventListener('click', () => toggleComplete(task.id));
-            
-            // Create delete button
+
             const deleteBtn = document.createElement('button');
             deleteBtn.classList.add('delete-btn');
             deleteBtn.textContent = 'Delete';
             deleteBtn.addEventListener('click', () => deleteTask(task.id));
-            
-            // Add elements to DOM
+
             actionsDiv.appendChild(completeBtn);
             actionsDiv.appendChild(deleteBtn);
             li.appendChild(taskTextSpan);
+            li.appendChild(dueDateSpan);
             li.appendChild(actionsDiv);
             tasksList.appendChild(li);
         });
     }
-    
-    // Toggle task completion
+
     function toggleComplete(id) {
-        tasks = tasks.map(task => {
-            if (task.id === id) {
-                return {...task, completed: !task.completed};
-            }
-            return task;
-        });
-        
+        tasks = tasks.map(task => task.id === id ? {...task, completed: !task.completed} : task);
         saveTasks();
         renderTasks();
     }
-    
-    // Delete task
+
     function deleteTask(id) {
         tasks = tasks.filter(task => task.id !== id);
         saveTasks();
         renderTasks();
     }
-    
-    // Save tasks to localStorage
+
     function saveTasks() {
         localStorage.setItem('tasks', JSON.stringify(tasks));
     }
