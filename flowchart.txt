@@ -1,0 +1,16 @@
+flowchart TD
+    A[Page Loads] --> B[Load Tasks from localStorage]
+    B --> C[Render Tasks]
+    
+    D[User Adds Task] --> E{Input Empty?}
+    E -->|No| F[Create Task Object]
+    E -->|Yes| D
+    F --> G[Add to Tasks Array]
+    G --> H[Save to localStorage]
+    H --> C
+    
+    I[User Clicks Complete] --> J[Toggle Task Status]
+    J --> H
+    
+    K[User Clicks Delete] --> L[Remove from Tasks Array]
+    L --> H
